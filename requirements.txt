@@ -6,3 +6,4 @@ requests
 chromadb
 google-cloud-aiplatform     # (si luego quieres usar Google Gemini vía AI Platform)
 python-dotenv               # (para cargar variables de entorno)
+pytest
