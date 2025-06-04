@@ -1,3 +1,4 @@
+import os
 from typing import List
 
 from crewai_tools import ScrapeWebsiteTool, SerperDevTool
@@ -24,6 +25,7 @@ class CrewaiPlusLeadScoringCrew:
 
     agents_config = "config/agents.yaml"
     tasks_config = "config/tasks.yaml"
+
 
     @agent
     def lead_analysis_agent(self) -> Agent:
