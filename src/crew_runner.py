@@ -75,7 +75,29 @@ lead_management_crew = Crew(
 )
 
 # -------------------------------
-# 5) Función para arrancar el flujo
+# 5) Funciones públicas
+# -------------------------------
+async def run_conversation(message: str):
+    """Run a single conversational turn with the conversational_agent."""
+    task = Task(
+        description="Responde al usuario de forma cordial al mensaje: {message}",
+        expected_output="Respuesta del agente",
+        agent=conversational_agent,
+    )
+
+    crew = Crew(
+        agents=[conversational_agent],
+        tasks=[task],
+        verbose=True,
+        memory=True,
+    )
+
+    result = await crew.kickoff(inputs={"message": message})
+    return result
+
+
+# -------------------------------
+# 6) Función para arrancar el flujo completo de lead
 # -------------------------------
 async def run_lead_flow(lead_name: str, company: str):
     """
@@ -87,7 +109,7 @@ async def run_lead_flow(lead_name: str, company: str):
     return result
 
 # -------------------------------
-# 6) Prueba rápida (solo para correr por consola)
+# 7) Prueba rápida (solo para correr por consola)
 # -------------------------------
 if __name__ == "__main__":
     async def main():
