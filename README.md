@@ -1,130 +1,57 @@
-# 🧠 Lead Qualifier AI – IA Conversacional para Calificación de Leads
+# CrewaiPlusLeadScoring Crew
 
-Lead Qualifier AI es una solución inteligente de captura y calificación de leads integrada mediante un widget flotante embebido en cualquier sitio web. Utiliza agentes especializados, técnicas RAG y el protocolo Model Context Protocol (MCP) sobre CrewAI para generar conversaciones personalizadas, estructurar la información obtenida y calificar leads en tiempo real.
+Welcome to the CrewaiPlusLeadScoring Crew project, powered by [crewAI](https://crewai.com). This template is designed to help you set up a multi-agent AI system with ease, leveraging the powerful and flexible framework provided by crewAI. Our goal is to enable your agents to collaborate effectively on complex tasks, maximizing their collective intelligence and capabilities.
 
----
+## Installation
 
-## 🚀 Tecnologías Utilizadas
+Ensure you have Python >=3.10 <=3.13 installed on your system. This project uses [UV](https://docs.astral.sh/uv/) for dependency management and package handling, offering a seamless setup and execution experience.
 
-- **CrewAI**: Framework para agentes colaborativos multi-rol.
-- **Model Context Protocol (MCP)**: Comunicación entre servicios LLM, con múltiples servidores y seguridad integrada.
-- **RAG (Retrieval-Augmented Generation)**: Para enriquecer las respuestas de la IA con información almacenada.
-- **ChromaDB** *(futuro)*: Vector store para respuestas contextuales.
-- **FastAPI**: Backend rápido y asincrónico.
-- **HTML/CSS/JS**: Para el widget embebido.
-- **Airtable API**: CRM / gestión de leads.
+First, if you haven't already, install uv:
 
----
-
-## 📂 Estructura del Proyecto
-
+```bash
+pip install uv
 ```
 
-.
-├── config
-│   ├── agents.yaml               # Definición de agentes CrewAI
-│   └── tasks.yaml                # Tareas de cada agente
-├── frontend
-│   └── iframe\_widget
-│       ├── index.html            # Widget flotante
-│       ├── style.css             # Estilos del widget
-│       └── script.js             # Lógica de comunicación con backend
-├── src
-│   ├── main.py                   # Entrada principal del backend FastAPI
-│   ├── crew\_runner.py           # Inicializa y ejecuta los agentes CrewAI
-│   ├── extractor.py             # Extrae datos estructurados desde la conversación
-│   └── atm\_service.py           # Conecta con Airtable para actualizar leads
-├── prompts
-│   └── mcp\_lead\_prompt.yaml     # Plantilla de prompt MCP optimizado
-├── examples
-│   └── chat\_session\_example.py  # Ejemplo local de conversación
-├── requirements.txt             # Dependencias del proyecto
+Next, navigate to your project directory and install the dependencies:
 
+1. First lock the dependencies and then install them:
+```bash
+uv lock
+```
+```bash
+uv sync
+```
+### Customizing
+
+**Add your `OPENAI_API_KEY` into the `.env` file**
+
+- Modify `src/crewai_plus_lead_scoring/config/agents.yaml` to define your agents
+- Modify `src/crewai_plus_lead_scoring/config/tasks.yaml` to define your tasks
+- Modify `src/crewai_plus_lead_scoring/crew.py` to add your own logic, tools and specific args
+- Modify `src/crewai_plus_lead_scoring/main.py` to add custom inputs for your agents and tasks
+
+## Running the Project
+
+To kickstart your crew of AI agents and begin task execution, run this from the root folder of your project:
+
+```bash
+uv run crewai_plus_lead_scoring
 ```
 
----
+This command initializes the crewai-plus-lead-scoring Crew, assembling the agents and assigning them tasks as defined in your configuration.
 
-## 🧩 Configuración Inicial
+This example, unmodified, will run the create a `report.md` file with the output of a research on LLMs in the root folser
 
-1. **Clona el repositorio** (por SSH):
+## Understanding Your Crew
 
-```
-git clone git@github.com:tu_usuario/lead-qualifier-ai.git
-cd lead-qualifier-ai
-```
+The crewai-plus-lead-scoring Crew is composed of multiple AI agents, each with unique roles, goals, and tools. These agents collaborate on a series of tasks, defined in `config/tasks.yaml`, leveraging their collective skills to achieve complex objectives. The `config/agents.yaml` file outlines the capabilities and configurations of each agent in your crew.
 
-2. **Crea y activa el entorno virtual**:
+## Support
 
-```
-pyenv virtualenv 3.11.8 lead-qualifier-env
-pyenv local lead-qualifier-env
-python -m venv .venv
-source .venv/bin/activate
-```
+For support, questions, or feedback regarding the CrewaiPlusLeadScoring Crew or crewAI.
+- Visit our [documentation](https://docs.crewai.com)
+- Reach out to us through our [GitHub repository](https://github.com/joaomdmoura/crewai)
+- [Joing our Discord](https://discord.com/invite/X4JWnZnxPb)
+- [Chat wtih our docs](https://chatg.pt/DWjSBZn)
 
-3. **Instala dependencias**:
-
-```
-pip install -r requirements.txt
-```
-
-4. **Configura variables de entorno** (si usas `.env` o secretos):
-
-```
-AIRTABLE_API_KEY=```
-MCP_API_KEY=```
-```
-
----
-
-## 🔧 Uso del Proyecto
-
-### Iniciar backend
-```
-uvicorn src.main:app --reload
-```
-
-### Probar CrewAI + MCP
-```
-python src/crew_runner.py
-```
-
-### Ver conversación de ejemplo
-```
-python examples/chat_session_example.py
-```
-
-### Ejecutar pruebas con pytest
-```
-pytest
-```
-
----
-
-## 🔐 Seguridad MCP
-
-- Todos los endpoints deben requerir firma y validación de identidad.
-- Consulta `config/mcp_server_config.yaml` para gestionar claves y tokens.
-
----
-
-## 🎯 Roadmap
-
-- [x] Integración CrewAI y MCP
-- [x] Widget embebido básico
-- [ ] Soporte multilenguaje
-- [ ] RAG conectado a ChromaDB
-- [ ] Dashboard de analytics para leads
-
----
-
-## 📜 Licencia
-
-MIT License. Puedes usar, modificar y distribuir este proyecto con libertad.
-
----
-
-## 🤝 Créditos
-
-Desarrollado por [Tu Nombre / Equipo] como parte del curso de IA aplicada al desarrollo software. Con la ayuda de Cursor, CrewAI y GPT-4.
-
+Let's create wonders together with the power and simplicity of crewAI.
