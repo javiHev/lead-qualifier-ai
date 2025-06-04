@@ -5,19 +5,18 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Lead Qualifier Widget MVP</title>
+  <title>Prueba WebSocket</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <div id="widget">
-    <div id="header">🟢 ¡Hola! Soy tu asistente de leads.</div>
+    <div id="header">🟢 Cliente WebSocket</div>
     <div id="content">
       <div id="messages"></div>
-      <div id="input-area">
-        <input type="text" id="lead-name" placeholder="Tu nombre..." />
-        <input type="text" id="company" placeholder="Tu empresa..." />
-        <button id="start-btn">Iniciar Cualificación</button>
-      </div>
+      <form id="input-area">
+        <input type="text" id="msg-input" placeholder="Escribe un mensaje..." autocomplete="off" />
+        <button type="submit">Enviar</button>
+      </form>
     </div>
   </div>
 
