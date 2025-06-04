@@ -1,0 +1,47 @@
+# config/tasks.yaml
+
+###############################################################################
+# Tarea 1: Conversación con el lead
+###############################################################################
+- name: conversation_task
+  description: |
+    Engage with the lead {lead_name} and gather the following information:
+    - Company size and industry
+    - Budget range
+    - Timeline for decision
+    - Decision-making authority
+    - Current pain points
+  expected_output: "Structured lead information ready for qualification"
+  agent: conversational_agent
+
+###############################################################################
+# Tarea 2: Cualificación del lead
+###############################################################################
+- name: qualification_task
+  description: |
+    Analyze the gathered lead information and provide:
+    - Lead score (1-10)
+    - Qualification status (Hot/Warm/Cold)
+    - Next recommended actions
+    - Key insights and notes
+  expected_output: "Complete lead qualification report with scoring"
+  agent: lead_qualifier_agent
+  context:
+    - conversation_task
+
+###############################################################################
+# Tarea 3: Registro en Airtable (opcional; solo si calificación >= 6)
+###############################################################################
+- name: airtable_registration_task
+  description: |
+    Register the qualified lead in Airtable with:
+    - All contact information
+    - Company details
+    - Lead score and qualification status
+    - Conversation notes and insights
+    Only register leads with score >= 6 (qualified leads).
+  expected_output: "Confirmation of lead registration in Airtable with record ID"
+  agent: atm_agent
+  context:
+    - conversation_task
+    - qualification_task
