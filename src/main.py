@@ -2,12 +2,44 @@
 
 import os
 import asyncio
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, WebSocket, WebSocketDisconnect
 from starlette.middleware.cors import CORSMiddleware
 
 from crew_runner import run_lead_flow
 
 app = FastAPI()
+
+
+class ConnectionManager:
+    """Manage multiple WebSocket connections."""
+
+    def __init__(self) -> None:
+        self.active_connections: list[WebSocket] = []
+
+    async def connect(self, websocket: WebSocket) -> None:
+        await websocket.accept()
+        self.active_connections.append(websocket)
+
+    def disconnect(self, websocket: WebSocket) -> None:
+        if websocket in self.active_connections:
+            self.active_connections.remove(websocket)
+
+    async def send_personal_message(self, message: str, websocket: WebSocket) -> None:
+        await websocket.send_text(message)
+
+    async def broadcast(self, message: str) -> None:
+        for connection in list(self.active_connections):
+            await connection.send_text(message)
+
+
+manager = ConnectionManager()
+
+
+async def run_conversation(message: str) -> str:
+    """Stub conversation logic used by the WebSocket endpoint."""
+    # In a real implementation this would call an agent or model.
+    await asyncio.sleep(0.1)
+    return f"Echo: {message}"
 
 # Permitir CORS (para que el iframe pueda hacer fetch)
 app.add_middleware(
@@ -38,6 +70,19 @@ async def chat_endpoint(req: Request):
     # - qualification_task output
     # - airtable_registration_task output (si score >= 6) o None
     return {"result": result}
+
+
+@app.websocket("/ws")
+async def websocket_endpoint(websocket: WebSocket):
+    """Handle WebSocket connections for real-time chat."""
+    await manager.connect(websocket)
+    try:
+        while True:
+            data = await websocket.receive_text()
+            response = await run_conversation(data)
+            await manager.send_personal_message(response, websocket)
+    except WebSocketDisconnect:
+        manager.disconnect(websocket)
 
 
 if __name__ == "__main__":
