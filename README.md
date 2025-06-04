@@ -94,6 +94,11 @@ python src/crew_runner.py
 python examples/chat_session_example.py
 ```
 
+### Ejecutar pruebas con pytest
+```
+pytest
+```
+
 ---
 
 ## 🔐 Seguridad MCP
