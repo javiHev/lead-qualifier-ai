@@ -1,25 +1,61 @@
-<!-- frontend/iframe_widget/index.html -->
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Prueba WebSocket</title>
-  <link rel="stylesheet" href="style.css" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- Fuente moderna (similar a Google Sans) -->
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+    rel="stylesheet"
+  />
+
+  <!-- Estilos -->
+  <link rel="stylesheet" href="css/style.css" />
+
+  <title>Chat Lead Qualifier</title>
 </head>
 <body>
-  <div id="widget">
-    <div id="header">🟢 Cliente WebSocket</div>
-    <div id="content">
-      <div id="messages"></div>
-      <form id="input-area">
-        <input type="text" id="msg-input" placeholder="Escribe un mensaje..." autocomplete="off" />
-        <button type="submit">Enviar</button>
-      </form>
-    </div>
+  <div class="chat-container">
+    <!-- Cabecera con avatar y título -->
+    <header class="chat-header">
+      <div class="header-left">
+        <div id="chatbot-avatar" class="avatar"></div>
+        <h2>Lead Qualifier 🤖</h2>
+      </div>
+      <button id="end-chat-btn" class="end-btn" title="Finalizar chat">✕</button>
+    </header>
+
+    <!-- Área de mensajes -->
+    <main id="messages" class="chat-messages">
+      <!-- Aquí se inyectarán los mensajes -->
+    </main>
+
+    <!-- Barra de entrada -->
+    <footer class="chat-input-area">
+      <textarea
+        id="user-input"
+        class="chat-textarea"
+        rows="1"
+        placeholder="Escribe tu mensaje..."
+        autocomplete="off"
+      ></textarea>
+      <button id="send-btn" class="chat-send-btn" title="Enviar mensaje">
+        <!-- Avioncito de papel SVG -->
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          height="24"
+          viewBox="0 0 24 24"
+          width="24"
+          fill="currentColor"
+        >
+          <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" />
+        </svg>
+      </button>
+    </footer>
   </div>
 
-  <script src="script.js"></script>
+  <!-- Script principal -->
+  <script src="js/chat.js"></script>
 </body>
 </html>

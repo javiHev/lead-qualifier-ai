@@ -1,0 +1,349 @@
+/* ----------------------------------------
+   (1) Reset ligero y variables de color
+   ---------------------------------------- */
+   * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+  
+  :root {
+    /* Fuentes */
+    --font-family: "Inter", sans-serif;
+  
+    /* Degradado principal Gemini para burbujas de usuario y elementos clave */
+    --gradient-user: linear-gradient(
+      135deg,
+      #6B6EFF, /* Azul principal */
+      #8A6BFF, /* Morado azulado vibrante */
+      #5A2CFF  /* Morado intenso */
+    );
+  
+    /* Fondo del chat: degradado gris oscuro a gris medio */
+    --gradient-chat-bg: linear-gradient(
+      to bottom right,
+      #1A1A1A, /* Gris muy oscuro */
+      #2C2C2C  /* Gris medio oscuro */
+    );
+  
+    /* Colores de texto */
+    --color-text: #EEEEEE;       /* Texto general del chat */
+    --color-assistant-text: #CCCCCC; /* Texto de respuestas asistente */
+  
+    /* Input */
+    --color-input-bg: #2C2C2C;  
+    --color-input-border: #444444;
+  
+    /* Radios y sombras */
+    --radius: 24px;
+    --shadow-light: rgba(0, 0, 0, 0.05);
+    --shadow-strong: rgba(90, 44, 255, 0.15);
+  
+    /* Tamaños */
+    --avatar-size: 36px;
+    --typing-box-size: 16px;
+  }
+  
+  /* ----------------------------------------
+     (2) Body y contenedor principal
+     ---------------------------------------- */
+  body {
+    background-color: #0D0D0D;
+    font-family: var(--font-family);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+  }
+  
+  .chat-container {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    max-width: 400px;
+    height: 100vh;
+    max-height: 700px;
+    background: var(--gradient-chat-bg);
+    border-radius: var(--radius);
+    box-shadow: 0 10px 60px var(--shadow-strong); /* sombra “flotante” */
+    overflow: hidden;
+    position: relative;
+  
+    /* Animación de leve flotación */
+    animation: container-float 6s ease-in-out infinite;
+  }
+  
+  @keyframes container-float {
+    0%, 100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-2px);
+    }
+  }
+  
+  /* ----------------------------------------
+     (3) Cabecera
+     ---------------------------------------- */
+  .chat-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    background: var(--gradient-user);
+    color: #FFFFFF;
+    box-shadow: 0 2px 8px var(--shadow-light);
+  }
+  
+  .header-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  
+  .chat-header h2 {
+    font-size: 1.1rem;
+    font-weight: 600;
+  }
+  
+  /* Avatar geométrico pulsante */
+  .avatar {
+    width: var(--avatar-size);
+    height: var(--avatar-size);
+    background: var(--gradient-user);
+    border-radius: 50%;
+    position: relative;
+    animation: avatar-pulse 2s infinite ease-in-out;
+  }
+  
+  @keyframes avatar-pulse {
+    0%, 100% {
+      transform: scale(1);
+      box-shadow: 0 0 0 0 rgba(90, 44, 255, 0.15);
+    }
+    50% {
+      transform: scale(1.1);
+      box-shadow: 0 0 0 10px rgba(90, 44, 255, 0);
+    }
+  }
+  
+  /* Botón cerrar */
+  .end-btn {
+    background: none;
+    border: none;
+    color: #FFFFFF;
+    font-size: 1.2rem;
+    cursor: pointer;
+    transition: opacity 0.2s;
+  }
+  .end-btn:hover {
+    opacity: 0.7;
+  }
+  
+  /* ----------------------------------------
+     (4) Área de mensajes
+     ---------------------------------------- */
+  .chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    scroll-behavior: smooth;
+    /* El fondo es el degradado gris oscuro, heredado del contenedor */
+  }
+  
+  /* Scrollbar discreta */
+  .chat-messages::-webkit-scrollbar {
+    width: 6px;
+  }
+  .chat-messages::-webkit-scrollbar-thumb {
+    background-color: var(--shadow-light);
+    border-radius: 3px;
+  }
+  
+  /* ----------------------------------------
+     (5) Burbuja de usuario (derecha)
+     ---------------------------------------- */
+  .message.user {
+    align-self: flex-end;
+    max-width: 75%;
+    background: var(--gradient-user);
+    color: #FFFFFF;
+    padding: 14px 18px;
+    border-radius: var(--radius);
+    font-size: 0.95rem;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 2px 8px var(--shadow-light);
+    animation: bubble-scale-in-right 0.3s ease-out;
+  }
+  
+  /* Burbuja de usuario, animación desde abajo-derecha */
+  @keyframes bubble-scale-in-right {
+    0% {
+      opacity: 0;
+      transform: scale(0.8) translateX(50%) translateY(20%);
+    }
+    100% {
+      opacity: 1;
+      transform: scale(1) translateX(0) translateY(0);
+    }
+  }
+  
+  /* ----------------------------------------
+     (6) Respuesta del asistente (texto sobre fondo, alineada a la izquierda)
+     ---------------------------------------- */
+  .message.assistant {
+    align-self: flex-start;
+    max-width: 80%;
+    color: var(--color-assistant-text);
+    font-size: 0.95rem;
+    background: transparent; /* Sin burbuja */
+    padding: 0;               /* Sin padding de burbuja */
+    position: relative;
+    animation: assistant-text-appear 0.4s ease-out;
+  }
+  
+  /* Animación de aparición para texto del asistente */
+  @keyframes assistant-text-appear {
+    0% {
+      opacity: 0;
+      transform: translateX(-20px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+  
+  /* ----------------------------------------
+     (7) Mensaje de sistema (errores/avisos)
+     ---------------------------------------- */
+  .message.system {
+    align-self: center;
+    color: #999999;
+    font-size: 0.85rem;
+    margin-top: 4px;
+  }
+  
+  /* ----------------------------------------
+     (8) Indicador “robot tipeando” original
+     ---------------------------------------- */
+  .typing-indicator {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    align-self: flex-start; /* Aparece a la izquierda */
+    margin-top: -8px;
+    margin-bottom: -4px;
+  }
+  
+  /* Cuadrado que late con degradado */
+  .typing-square {
+    width: var(--typing-box-size);
+    height: var(--typing-box-size);
+    background: var(--gradient-user);
+    border-radius: 4px;
+    animation: typing-pulse 1s infinite ease-in-out;
+  }
+  
+  @keyframes typing-pulse {
+    0%, 100% {
+      transform: scale(1);
+      opacity: 0.7;
+    }
+    50% {
+      transform: scale(1.3);
+      opacity: 1;
+    }
+  }
+  
+  /* ----------------------------------------
+     (9) Área de entrada (input + botón)
+     ---------------------------------------- */
+  .chat-input-area {
+    display: flex;
+    align-items: center;
+    padding: 12px 16px;
+    border-top: 1px solid var(--color-input-border);
+    background-color: var(--color-bg-chat);
+    gap: 8px;
+  }
+  
+  .chat-textarea {
+    flex: 1;
+    resize: none;
+    border: 1px solid var(--color-input-border);
+    border-radius: var(--radius);
+    padding: 12px;
+    font-size: 0.95rem;
+    font-family: var(--font-family);
+    background-color: var(--color-input-bg);
+    color: var(--color-text);
+    line-height: 1.4;
+    min-height: 40px;
+    max-height: 120px;
+    overflow-y: auto;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  }
+  
+  .chat-textarea:focus {
+    border-color: #6B6EFF;
+    box-shadow: 0 0 0 2px rgba(107, 110, 255, 0.2);
+  }
+  
+  .chat-textarea.truncate {
+    overflow-y: hidden;
+  }
+  
+  .chat-send-btn {
+    background: var(--gradient-user);
+    border: none;
+    border-radius: var(--radius);
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: transform 0.1s ease, opacity 0.2s ease;
+  }
+  
+  .chat-send-btn:hover {
+    transform: scale(1.05);
+  }
+  
+  .chat-send-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  
+  /* Icono del avión centrado */
+  .chat-send-btn svg {
+    width: 24px;
+    height: 24px;
+    fill: #FFFFFF;
+  }
+  
+  /* ----------------------------------------
+     (10) Responsive (ajustes menores)
+     ---------------------------------------- */
+  @media (max-width: 380px) {
+    .chat-container {
+      max-width: 100%;
+    }
+    .chat-input-area {
+      padding: 8px 12px;
+    }
+    .chat-textarea {
+      padding: 8px;
+      font-size: 0.9rem;
+    }
+    .chat-send-btn {
+      width: 40px;
+      height: 40px;
+    }
+  }
+  
