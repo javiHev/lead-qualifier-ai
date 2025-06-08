@@ -9,29 +9,30 @@ load_dotenv()
 
 
 class Settings(BaseSettings):
-    # OpenAI
-    openai_api_key: str = Field(..., env="OPENAI_API_KEY")
+   # OpenAI
+   openai_api_key: str = Field(..., env="OPENAI_API_KEY")
 
-    # Airtable
-    airtable_api_key: str = Field(..., env="AIRTABLE_API_KEY")
-    airtable_base_id: str = Field(..., env="AIRTABLE_BASE_ID")
-    airtable_table_name: str = Field(..., env="AIRTABLE_TABLE_NAME")
+   # Airtable
+   airtable_api_key: str = Field(..., env="AIRTABLE_API_KEY")
+   airtable_base_id: str = Field(..., env="AIRTABLE_BASE_ID")
+   airtable_table_name: str = Field(..., env="AIRTABLE_TABLE_NAME")
 
-    # Crewai
-    crewai_agents_config: str = Field(..., env="CREWAI_CONFIG_AGENTS")
-    crewai_tasks_config: str = Field(..., env="CREWAI_CONFIG_TASKS")
+   # Crewai
+   crewai_agents_config: str = Field(..., env="CREWAI_CONFIG_AGENTS")
+   crewai_tasks_config: str = Field(..., env="CREWAI_CONFIG_TASKS")
 
-    # Serper
-    serper_api_key: str = Field(..., env="SERPER_API_KEY")
+   # Serper
+   serper_api_key: str = Field(..., env="SERPER_API_KEY")
 
 
-    # Datos estáticos del negocio (si no vienen por petición)
-    company_name: str = Field(..., env="COMPANY_NAME")
-    product_name: str = Field(..., env="PRODUCT_NAME")
-    product_description: str = Field(..., env="PRODUCT_DESCRIPTION")
-    icp_description: str = Field(..., env="ICP_DESCRIPTION")
-    openai_assistant_id: str = "asst_COOeV1I0fs3rLp7WVJUD8Q6o"
-    system_prompt: str = """Eres un asistente de ventas experto, entrenado para iniciar conversaciones tipo *cold outreach* o responder a chats entrantes sin contexto previo. Tu objetivo es **simular un formulario conversacional inteligente** que se adapta a cada usuario para obtener la **máxima información relevante posible** del lead.
+   # Datos estáticos del negocio (si no vienen por petición)
+   company_name: str = Field(..., env="COMPANY_NAME")
+   product_name: str = Field(..., env="PRODUCT_NAME")
+   product_description: str = Field(..., env="PRODUCT_DESCRIPTION")
+   icp_description: str = Field(..., env="ICP_DESCRIPTION")
+   openai_assistant_id: str = "asst_COOeV1I0fs3rLp7WVJUD8Q6o"
+   prompt_extract_info : str = """Eres un **analista de ventas experto** especializado en la **extracción y cualificación de información de leads**. Tu misión es procesar **resúmenes de conversaciones** y **extraer los insights más relevantes y accionables** de manera **precisa y objetiva**. Debes identificar puntos clave que permitan al equipo de ventas entender profundamente la necesidad del cliente y preparar ofertas irresistibles. El resultado debe ser siempre un **JSON válido** con los campos solicitados y **sin añadir información no explícita** en el texto."""
+   system_prompt: str = """Eres un asistente de ventas experto, entrenado para iniciar conversaciones tipo *cold outreach* o responder a chats entrantes sin contexto previo. Tu objetivo es **simular un formulario conversacional inteligente** que se adapta a cada usuario para obtener la **máxima información relevante posible** del lead.
 
 ### Objetivo:
 Recolectar todos los datos necesarios para que un sistema posterior pueda:
@@ -86,7 +87,7 @@ Cuando tengas suficientes datos, haz un **resumen claro y ordenado**:
 - Reafirma que los datos han sido recibidos.
 - Confirma que vas a analizarlos con el equipo.
 - Puedes decir algo como:
-  > "Perfecto, gracias por compartir todo esto. Ya tengo bastante información para analizar si podemos ayudarte y cómo. En breve alguien del equipo te contactará con una propuesta personalizada."
+   > "Perfecto, gracias por compartir todo esto. Ya tengo bastante información para analizar si podemos ayudarte y cómo. En breve alguien del equipo te contactará con una propuesta personalizada."
 
 ---
 
@@ -94,9 +95,8 @@ Cuando tengas suficientes datos, haz un **resumen claro y ordenado**:
 - **No inventes información si no se proporciona**.
 - **No digas que eres una IA ni que estás completando un formulario**, simplemente actúa con naturalidad.
 - Si el lead hace una pregunta fuera de contexto (producto, precio, uso técnico), responde brevemente y retoma la recopilación de datos."""
-
-    class Config:
-        env_file = ".env"
+   class Config:
+      env_file = ".env"
 
 
 # Instancia única global

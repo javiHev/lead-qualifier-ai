@@ -2,25 +2,24 @@ from typing import Dict, Any
 from app.config import settings
 from crewai_plus_lead_scoring.crew import CrewaiPlusLeadScoringCrew
 from app.models import CrewaiResult
+import json
 
 
 class CrewaiService:
     """
-    Servicio para invocar al crew de Crewai y obtener el JSON de scoring.
+    Servicio para invocar al crew de CrewAI y obtener el JSON final de scoring.
     """
 
     @staticmethod
     def run_lead_scoring(
-        form_response: str,  # Por ejemplo, resumen de datos de formulario
+        form_response: str,
         additional_info: Dict[str, Any] = None,
     ) -> CrewaiResult:
         """
-        Lanza el crew secuencial de Crewai y devuelve un objeto CrewaiResult.
-        - La entrada debe incluir company, product_name, product_description,
-          icp_description y form_response (y cualquier metadata extra).
-        - El crew ejecuta las tareas en orden y produce un JSON final.
+        Lanza el crew secuencial de CrewAI y devuelve un CrewaiResult validado.
         """
-        # Construir inputs para el crew
+
+        # 1) Construir inputs para el crew
         payload = {
             "company": settings.company_name,
             "product_name": settings.product_name,
@@ -28,25 +27,32 @@ class CrewaiService:
             "icp_description": settings.icp_description,
             "form_response": form_response,
         }
-
         if additional_info:
             payload.update(additional_info)
 
-        # Instanciar el crew
-        crew = CrewaiPlusLeadScoringCrew()
-
-        # Ejecutar de forma síncrona (el SDK de Crewai maneja internamente)
-        # Asumimos que crew().kickoff devuelve un diccionario con el output de la última tarea:
-        # e.g. {"lead_score": 8.5, "use_case_summary": "...", "talking_points": [...]}
+        # 2) Ejecutar el crew
         try:
-            output = crew.crew().kickoff(inputs=payload)
+            crew = CrewaiPlusLeadScoringCrew()
+            raw_output = crew.crew().kickoff(inputs=payload)
         except Exception as e:
-            raise RuntimeError(f"Error al ejecutar Crewai crew: {e}")
+            raise RuntimeError(f"Error al ejecutar el crew de CrewAI: {e}")
 
-        # Validar/parsear a nuestro Pydantic CrewaiResult
+        # 3) Convertir el output a diccionario
+        if isinstance(raw_output, dict):
+            output_dict = raw_output
+        elif hasattr(raw_output, "json_dict") and raw_output.json_dict:
+            output_dict = raw_output.json_dict
+        elif hasattr(raw_output, "model_dump"):
+            output_dict = raw_output.model_dump()
+        elif hasattr(raw_output, "dict"):
+            output_dict = raw_output.dict()
+        else:
+            output_dict = dict(raw_output)
+
+        # 4) Validar/parsear contra nuestro Pydantic CrewaiResult
         try:
-            result = CrewaiResult(**output)
-        except Exception as e:
-            raise ValueError(f"Respuesta de Crewai no coincide con schema esperado: {e}")
+            result = CrewaiResult(**output_dict)
+        except ValidationError as e:
+            raise ValueError(f"Respuesta de CrewAI no coincide con el schema esperado: {e}")
 
         return result

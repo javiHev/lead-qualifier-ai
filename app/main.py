@@ -1,22 +1,34 @@
-# app/main.py
-
 import uvicorn
+import logging
+import os
+import json
+from datetime import datetime
 from fastapi import FastAPI, HTTPException
-from fastapi.responses import StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import StreamingResponse
+from pydantic import ValidationError
 
 from app.config import settings
-from app.models import ChatStreamRequest, ChatFinishRequest, ChatFinishResponse
+from app.models import (
+    ChatStreamRequest,
+    ChatFinishRequest,
+    ChatFinishResponse
+)
 from app.services.openai_service import OpenAIService, stream_chat
 from app.services.crewai_service import CrewaiService
-from app.services.airtable_service import AirtableService
 from app.utils.streaming_utils import sse_response_generator
+
+# Configurar logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 app = FastAPI(
     title="Chatbot API con Streaming y Crewai → Airtable",
     version="1.0.0",
-    description="Backend que utiliza la API de Asistentes de OpenAI (streaming SSE), "
-                "Crewai y Airtable."
+    description=(
+        "Backend que utiliza la API de Asistentes de OpenAI (streaming SSE), "
+        "CrewAI y Airtable."
+    )
 )
 
 # Habilitar CORS
@@ -35,7 +47,6 @@ async def chat_stream(request: ChatStreamRequest):
         raise HTTPException(status_code=400, detail="La conversación debe incluir al menos 1 mensaje.")
 
     async def event_generator():
-        # Llamamos a nuestro stream_chat, que internamente crea thread, mensajes y run
         async for chunk in stream_chat(
             request.messages,
             assistant_id=settings.openai_assistant_id
@@ -50,48 +61,104 @@ async def chat_stream(request: ChatStreamRequest):
 
 @app.post("/chat/finish", response_model=ChatFinishResponse)
 async def chat_finish(request: ChatFinishRequest):
-    # 1) Concatenar conversación
-    full_conv = ""
-    for msg in request.messages:
-        prefix = "USER: " if msg.role == "user" else "ASSISTANT: "
-        full_conv += f"{prefix}{msg.content}\n"
-    form_response = full_conv
-
-    # 2) Ejecutar Crewai
     try:
-        crewai_result = CrewaiService.run_lead_scoring(form_response)
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error en Crewai: {e}")
-
-    # 3) Generar resumen/insights con Assistants API
-    try:
-        summary_text = await OpenAIService.summarize_conversation(
-            request.messages,
-            assistant_id=settings.openai_assistant_id
+        # 1) Construir el texto completo de la conversación
+        full_conv = "\n".join(
+            f"{'USER' if m.role == 'user' else 'ASSISTANT'}: {m.content}"
+            for m in request.messages
         )
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error al resumir conversación: {e}")
+        logger.info(f"Full conversation:\n{full_conv}")
 
-    # 4) Insertar en Airtable
-    try:
-        fields = AirtableService.build_lead_fields(
-            user_id=request.user_id or "unknown",
-            session_id=request.session_id or "unknown",
-            crewai_data=crewai_result.dict(),
+        # 2) Extraer datos estructurados del lead
+        try:
+            extracted_data = await OpenAIService.extract_lead_data(full_conv)
+            logger.info(f"Extracted data: {extracted_data}")
+        except Exception as e:
+            logger.exception("Error extrayendo datos del lead")
+            raise HTTPException(
+                status_code=500,
+                detail=f"Error extrayendo datos del lead: {e}"
+            )
+
+        # 3) Ejecutar CrewAI y obtener CrewaiResult directamente
+        try:
+            crewai_result = CrewaiService.run_lead_scoring(
+                form_response=full_conv,
+                additional_info=extracted_data
+            )
+            logger.info(f"CrewAI result: {crewai_result}")
+        except HTTPException:
+            # Re-lanzar HTTPException para respetar código y detalle
+            raise
+        except Exception as e:
+            logger.exception("Error en Crewai")
+            raise HTTPException(
+                status_code=500,
+                detail=f"Error en Crewai: {e}"
+            )
+
+        # 4) Generar resumen/insights con OpenAI
+        try:
+            summary_text = await OpenAIService.summarize_conversation(
+                request.messages,
+                assistant_id=settings.openai_assistant_id
+            )
+            logger.info(f"Summary text: {summary_text}")
+        except Exception as e:
+            logger.exception("Error al resumir conversación")
+            raise HTTPException(
+                status_code=500,
+                detail=f"Error al resumir conversación: {e}"
+            )
+
+        # 5) Guardar resultado en JSON
+        try:
+            # Convertir Pydantic model a dict
+            try:
+                result_dict = crewai_result.model_dump()  # Pydantic v2
+            except AttributeError:
+                result_dict = crewai_result.dict()       # Pydantic v1
+
+            output_data = {
+                "user_id": request.user_id or "unknown",
+                "session_id": request.session_id or "unknown",
+                "crewai_data": result_dict,
+                "summary": summary_text,
+                "conversation": full_conv,
+                "timestamp": datetime.now().isoformat()
+            }
+
+            os.makedirs("data", exist_ok=True)
+            filename = f"data/lead_{request.session_id}_{datetime.now():%Y%m%d_%H%M%S}.json"
+            with open(filename, "w", encoding="utf-8") as f:
+                json.dump(output_data, f, indent=2, ensure_ascii=False)
+
+            logger.info(f"Datos guardados en: {filename}")
+
+        except Exception as e:
+            logger.exception("Error al guardar datos en JSON")
+            raise HTTPException(
+                status_code=500,
+                detail=f"Error al guardar datos: {e}"
+            )
+
+        # 6) Responder satisfactoriamente
+        return ChatFinishResponse(
+            success=True,
+            crewai_result=crewai_result,
             summary=summary_text,
-            conversation=full_conv
+            message="Lead procesado y almacenado correctamente en JSON.",
+            airtable_record_id=None  # o el ID que devuelva AirtableService si lo integras
         )
-        record_id = AirtableService.create_record(fields)
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error al guardar en Airtable: {e}")
 
-    return ChatFinishResponse(
-        success=True,
-        airtable_record_id=record_id,
-        crewai_result=crewai_result,
-        summary=summary_text,
-        message="Lead procesado y almacenado correctamente en Airtable."
-    )
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.exception("Error inesperado en /chat/finish")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error interno: {e}"
+        )
 
 
 if __name__ == "__main__":
